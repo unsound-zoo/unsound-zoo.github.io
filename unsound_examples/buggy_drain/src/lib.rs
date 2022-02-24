@@ -16,19 +16,25 @@ use std::{ptr, slice};
 /// It's not meant to be 100% correct, but works just well enough to illustrate
 /// the problem.
 struct MyVec<T> {
-    contents: *mut T,
+    contents: *const T,
     capacity: usize,
     length: usize,
 }
 
 // We're lazy; this is the only way to initialize our Vec.
-impl<T, const N: usize> From<Box<[T; N]>> for MyVec<T> {
-    fn from(array: Box<[T; N]>) -> Self {
-        let contents = Box::leak(array) as *mut T;
+impl<T, const N: usize> From<[T; N]> for MyVec<T> {
+    fn from(slice: [T; N]) -> Self {
+        let boxed_slice = Box::<[T]>::from(slice);
+        let length = boxed_slice.len();
+        let contents = boxed_slice.as_ptr();
+        // We now assume ownership via the raw pointer; leak the Box so that
+        // it's not destructed here.
+        Box::leak(boxed_slice);
+
         MyVec {
             contents,
-            capacity: N,
-            length: N,
+            capacity: length,
+            length,
         }
     }
 }
@@ -114,7 +120,7 @@ impl<T> Drop for Drain<'_, T> {
         if count > 0 {
             unsafe {
                 let src = self.parent.contents.add(self.index);
-                let dst = self.parent.contents;
+                let dst = self.parent.contents as *mut T;
                 ptr::copy(src, dst, count);
             }
         }
@@ -129,7 +135,7 @@ impl<T> Drop for Drain<'_, T> {
 #[test]
 fn see_vec_works() {
     // Use an array of things that allocate from the heap, to make problems obvious.
-    let array = Box::new([Box::new(0u8), Box::new(1u8), Box::new(2u8)]);
+    let array = [Box::new(0u8), Box::new(1u8), Box::new(2u8)];
     let mut v = MyVec::from(array);
     {
         let mut drainer = v.drain();
@@ -146,7 +152,7 @@ fn see_vec_works() {
 #[test]
 fn fails_when_drain_leaked() {
     // Use an array of things that allocate from the heap, to make problems obvious.
-    let array = Box::new([Box::new(0u8), Box::new(1u8), Box::new(2u8)]);
+    let array = [Box::new(0u8), Box::new(1u8), Box::new(2u8)];
     let mut v = MyVec::from(array);
     {
         let mut drainer = v.drain();
@@ -160,5 +166,6 @@ fn fails_when_drain_leaked() {
     }
 
     // Check that the remaining value is what we expect.
+    // This accesses freed memory, and should fail in Miri.
     assert_eq!(2, *v[0]);
 }
