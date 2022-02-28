@@ -54,11 +54,11 @@ impl<T> Index<usize> for MyVec<T> {
 
 impl<T> Drop for MyVec<T> {
     fn drop(&mut self) {
+        // There's no easy way to deal with half-initialized arrays/slices.
+        // To get a fully-uninitialized array, iterate over the contents,
+        // dropping them.
+        for _ in self.drain() {}
         unsafe {
-            // There's no easy way to deal with half-initialized arrays/slices.
-            // To get a fully-uninitialized array, iterate over the contents,
-            // dropping them.
-            for _ in self.drain() {}
             // Now that the contents have been dropped, drop the array memory
             // without interpreting it as initialized.
             let contents = self.contents as *mut MaybeUninit<T>;
