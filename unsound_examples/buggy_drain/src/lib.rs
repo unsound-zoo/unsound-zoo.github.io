@@ -129,6 +129,20 @@ impl<T> Drop for Drain<'_, T> {
 
 // To make this code sound:
 //
+// There is a thorough explanation of `Vec` design in the Rustonomicon here:
+// https://doc.rust-lang.org/nomicon/vec/vec.html
+//
+// More specifically, assuming that a guard object's Drop implementation
+// will always be run can lead to unsoundness.
+//
+// It's probably not very practical to update the parent length during each
+// iteration of Drain. The best way to make Drain sound is to temporarily set
+// the parent length to 0 while a Drain object is outstanding; if a Drain is
+// leaked, then the only thing that happens is that the contents of the Vec
+// get leaked as well.
+//
+// This strategy is explained here:
+// https://doc.rust-lang.org/nomicon/leaking.html
 //
 
 #[test]
