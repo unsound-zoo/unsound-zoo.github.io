@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 
-use std::mem::MaybeUninit;
+use std::alloc::{dealloc, Layout};
 use std::ops::Index;
-use std::{ptr, slice};
+use std::ptr;
 
 // This example was inspired by:
 // https://doc.rust-lang.org/nightly/nomicon/leaking.html
@@ -58,12 +58,11 @@ impl<T> Drop for MyVec<T> {
         // To get a fully-uninitialized array, iterate over the contents,
         // dropping them.
         for _ in self.drain() {}
+
+        // Now that the contents have been dropped, deallocate that memory.
+        let layout = Layout::array::<T>(self.capacity).unwrap();
         unsafe {
-            // Now that the contents have been dropped, drop the array memory
-            // without interpreting it as initialized.
-            let contents = self.contents as *mut MaybeUninit<T>;
-            let raw_slice = slice::from_raw_parts_mut(contents, self.capacity);
-            let _dropme = Box::from_raw(raw_slice);
+            dealloc(self.contents as *mut u8, layout);
         }
     }
 }
