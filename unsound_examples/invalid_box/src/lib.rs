@@ -90,13 +90,3 @@ fn dangling_box() {
     drop(x);
     drop(y);
 }
-
-#[test]
-fn uninitialized_box() {
-    use std::mem::MaybeUninit;
-
-    let x = MaybeUninit::<u32>::uninit();
-    let y = unsafe { x.assume_init() };
-
-    println!("y: {}", y);
-}
