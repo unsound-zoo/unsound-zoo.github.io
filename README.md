@@ -1,6 +1,7 @@
 # The Unsound Zoo
-
 ## A Collection of Unsound Rust Code
+
+![Mutant Ferris](https://github.com/ericseppanen/unsound_zoo/raw/assets/ferris-mutant.png)
 
 ### How to Shoot Yourself in the Foot with `unsafe`
 
