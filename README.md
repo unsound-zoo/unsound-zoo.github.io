@@ -64,6 +64,7 @@ test null_reference ... error: Undefined Behavior: null pointer is not a valid p
 - [Constructing an invalid slice](https://github.com/ericseppanen/unsound_zoo/blob/main/unsound_examples/malformed_slice/src/lib.rs)
 - [Accessing uninitialized memory](https://github.com/ericseppanen/unsound_zoo/blob/main/unsound_examples/uninitialized_memory/src/lib.rs)
 - [Reading the padding bytes of a struct](https://github.com/ericseppanen/unsound_zoo/blob/main/unsound_examples/read_padding/src/lib.rs)
+- [Extending a reference](TODO)
 
 **Complex unsound examples**
 
