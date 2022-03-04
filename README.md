@@ -66,6 +66,7 @@ test null_reference ... error: Undefined Behavior: null pointer is not a valid p
 - [Reading the padding bytes of a struct](https://github.com/ericseppanen/unsound_zoo/blob/main/unsound_examples/read_padding/src/lib.rs)
 - [Extending a reference](TODO)
 - [Mutating immutable data](TODO)
+- [Constructing illegal aliases](TODO)
 
 **Complex unsound examples**
 
